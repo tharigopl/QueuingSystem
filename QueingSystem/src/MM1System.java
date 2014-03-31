@@ -1,10 +1,8 @@
-import java.util.Calendar;
 import java.util.Scanner;
 
-import javax.annotation.Generated;
 
+public class MM1System {
 
-public class QueuingSystem {
 	public static enum eventType {ARR, DEP};
 	// Total no of jobs in the system i.e the capacity of the system = K
 	public static Integer K;
@@ -31,34 +29,30 @@ public class QueuingSystem {
 	
 	public double[] rho = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
 	
-	public static void main(String[] args) throws Exception{
-		
-		QueuingSystem queueingSystem = new QueuingSystem();
-		queueingSystem.getInput();
-		
-		/*for(){
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		MM1System queueingSystem = new MM1System();
 			
-		}*/
-		
 		queueingSystem.runSimulations();
-	}	
+	}
 	
 	public void runSimulations(){
 		// Calculate lambda from rho * m * mu
-				lambda1 = 0.1 * m * mu;
+				double lambda = 0.8;
+				mu = 1.0;
+				K = 4;
 				
-				double rho = 0.1;
 				// Get the jobs arrived
-				arrivalOfJobs();
+				eventList.insert(GenerateRV.expRV(lambda), 0);
 				
+				int count = 0;
 				// Simulate
-				while(noOfJobsDeparted < 15){
-					
+				while(noOfJobsDeparted < 10000){					
 					Event currentEvent = eventList.getEvent();
 					double previousClock = systemClock;
 					
 					if(currentEvent == null){
-						//continue;
+						System.out.println("");
 					}
 					systemClock = currentEvent.time;
 					
@@ -67,15 +61,15 @@ public class QueuingSystem {
 						case 0: 
 							EN += noOfJobsInTheSystem * (systemClock - previousClock);
 							noOfJobsInTheSystem++;
-							// if the no of jobs in the system is less than m
-							// then generate m departure events
 							
-							if (noOfJobsInTheSystem == 1 || noOfJobsInTheSystem < m) {
-								departureOfJobs(systemClock);				       
+							if(noOfJobsInTheSystem < K){
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
+							}
+							
+							if (noOfJobsInTheSystem == 1) {
+								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
 						    }
 							
-							// Generate next arrival
-							arrivalOfJobs();
 							
 							break;
 						//Departure Event
@@ -88,10 +82,13 @@ public class QueuingSystem {
 							
 							// Create a departure event 
 							if(noOfJobsInTheSystem > 0){
-								departureOfJobs(systemClock);
+								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
 							}
-							if(eventList.event_count == 0)
-								arrivalOfJobs();
+							
+							if(eventList.event_count == 0){
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
+							}
+							
 							break;					
 					}
 					currentEvent = null;
@@ -102,7 +99,7 @@ public class QueuingSystem {
 				System.out.println( "Expected number of jobs (simulation): "+EN/systemClock);
 				
 				// output derived value for E[N]
-				rho = lambda1/mu; 
+				double rho = lambda/mu; 
 				System.out.println("Expected number of jobs (analysis): "+rho/(1-rho));
 	}
 	
@@ -124,26 +121,5 @@ public class QueuingSystem {
 		m = Integer.parseInt(scanner.next().toString());
 		
 	}
-	
-	
-	public void arrivalOfJobs(){	
-		// Block administrative jobs if the current capacity of the system is equal to the total capacity
-		if(noOfJobsInTheSystem < K){
-			eventList.insert(GenerateRV.expRV(lambda1), 0);
-			//noOfJobsInTheSystem++;
-		}
-		
-		// Block the user jobs if the total no of jobs in the current system is >= the threshold given by the user 
-		// and also if the if total no of jobs in the current system is = to the total capacity of the system i.e K
-		// TODO: Check if the second part of the below condition is needed or not		
-		if(noOfJobsInTheSystem < l && noOfJobsInTheSystem < K){
-			eventList.insert(GenerateRV.expRV(lambda2), 0);
-			//noOfJobsInTheSystem++;
-		}
-	}
-	
-	public void departureOfJobs(double clock){		
-		eventList.insert(clock + GenerateRV.expRV(mu), 1);	
-		//noOfJobsInTheSystem++;
-	}
+
 }
