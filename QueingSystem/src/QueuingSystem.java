@@ -1,19 +1,140 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.util.Calendar;
+import java.util.Scanner;
+
+import javax.annotation.Generated;
 
 
 public class QueuingSystem {
-	public enum Currency {ARR, DEP};
+	public static enum eventType {ARR, DEP};
+	// Total no of jobs in the system i.e the capacity of the system = K
+	public static Integer K;
+	// TODO: Check and remove if we need this variable or not
+	// public static Integer totalCapacityOfTheSystem = 0;
+		
+	public static Integer noOfJobsInTheSystem = 0;
+	public static EventList eventList = new EventList();
+	
+	// Administrative jobs rate = lambda1 - Poisson Process
+	public static double lambda1 = 0;
+	// User jobs rate = lambda2 - Poisson Process		
+	public static double lambda2 = 0;
+	// Processing time for the jobs at the rate of mu
+	public static double mu = 0;
+	// Threshold limit for user jobs = l
+	public static Integer l = 0;
+	// Total no of processors - servers = m
+	public static Integer m = 0;
+	private static double systemClock = 0.0;
+	
+	public static double EN = 0.0;
+	public static Integer noOfJobsDeparted = 0;
+	
+	public static double[] rho = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
 	
 	public static void main(String[] args) throws Exception{
 		
-		System.out.println(" Enter ");
-		BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
-	    String s = bufferRead.readLine();
-	    
-	    System.out.println();
- 
-	    System.out.println(s);
+		QueuingSystem queueingSystem = new QueuingSystem();
+		getInput();
+		
 		
 	}	
+	
+	public static void runSimulations(){
+		// Calculate lambda from rho * m * mu
+				lambda1 = 0.1 * m * mu;
+				// Get the jobs arrived
+				arrivalOfJobs();
+				
+				// Simulate
+				while(noOfJobsDeparted < 10000){
+					
+					Event currentEvent = eventList.getEvent();
+					double previousClock = systemClock;
+					systemClock = currentEvent.time;
+					
+					switch(eventType.valueOf(String.valueOf(currentEvent.type))){
+						// Arrival Event
+						case ARR: 
+							EN += noOfJobsInTheSystem * (systemClock - previousClock);
+							// Generate next arrival
+							arrivalOfJobs();
+							
+							// Increment the capacity of the system
+							noOfJobsInTheSystem++;
+							
+							// Generate next arrival
+							arrivalOfJobs();
+							
+							// if the no of jobs in the system is less than m
+							// then generate m departure events
+							if (noOfJobsInTheSystem == 1 || noOfJobsInTheSystem < m) {
+								departureOfJobs(systemClock);				       
+						    }
+							
+							break;
+						//Departure Event
+						case DEP:
+							EN += noOfJobsInTheSystem * (systemClock - previousClock);							
+							// No of jobs departed from the system
+							noOfJobsDeparted++;
+							// Decrement the capacity of the system
+							noOfJobsInTheSystem--;
+							
+							// Create a departure event 
+							if(noOfJobsInTheSystem > 0){
+								departureOfJobs(systemClock);
+							}
+							break;					
+					}
+					currentEvent = null;
+				}
+					
+				// output simulation results for N, E[N]
+				System.out.println( "Current number of customers in system: "+noOfJobsInTheSystem);
+				System.out.println( "Expected number of customers (simulation): "+EN/systemClock);
+				
+				// output derived value for E[N]
+				double rho = lambda1/mu; 
+				System.out.println("Expected number of customers (analysis): "+rho/(1-rho));
+	}
+	
+	public static void getInput(){		
+		Scanner scanner = new Scanner(System.in);		
+		System.out.println("Enter total no of jobs in the system  [K]");
+		K = Integer.parseInt(scanner.next().toString());
+		
+		System.out.println("Enter Threshold limit for user jobs  [l]");
+		l = Integer.parseInt(scanner.next().toString());
+		
+		System.out.println("Enter  User jobs rate Poisson Process [lambda2]");
+		lambda2 = Integer.parseInt(scanner.next().toString());
+		
+		System.out.println("Enter Processing time for the jobs at the rate of [mu]");
+		mu = Integer.parseInt(scanner.next().toString());
+		
+		System.out.println("Enter total no of processeors in the system  [m]");
+		m = Integer.parseInt(scanner.next().toString());
+		
+	}
+	
+	
+	public static void arrivalOfJobs(){	
+		// Block administrative jobs if the current capacity of the system is equal to the total capacity
+		if(noOfJobsInTheSystem < K){
+			eventList.insert(GenerateRV.expRV(lambda1), 0);
+			// noOfJobsInTheSystem++;
+		}
+		
+		// Block the user jobs if the total no of jobs in the current system is >= the threshold given by the user 
+		// and also if the if total no of jobs in the current system is = to the total capacity of the system i.e K
+		// TODO: Check if the second part of the below condition is needed or not		
+		if(noOfJobsInTheSystem <= l || noOfJobsInTheSystem < K){
+			eventList.insert(GenerateRV.expRV(lambda1), 0);
+			// noOfJobsInTheSystem++;
+		}
+	}
+	
+	public static void departureOfJobs(double clock){		
+		eventList.insert(clock + GenerateRV.expRV(mu), 1);	
+	}
 }

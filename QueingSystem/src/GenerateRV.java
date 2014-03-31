@@ -1,5 +1,5 @@
 
-public class GenetareRV {
+public class GenerateRV {
 	public static double seed = 1111.0;
 	public static double k = 16807;
 	public static double m = 2147483647;
