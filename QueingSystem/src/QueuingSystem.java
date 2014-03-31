@@ -41,14 +41,14 @@ public class QueuingSystem {
 	
 	public void runSimulations(){
 		// Calculate lambda from rho * m * mu
-				lambda1 = 0.1 * m * mu;
+				lambda1 = 1 * m * mu;
 				
-				double rho = 0.1;
+				double rho = 1;
 				// Get the jobs arrived
 				arrivalOfJobs();
 				
 				// Simulate
-				while(noOfJobsDeparted < 15){
+				while(noOfJobsDeparted < 10000){
 					
 					Event currentEvent = eventList.getEvent();
 					double previousClock = systemClock;
@@ -66,7 +66,7 @@ public class QueuingSystem {
 							// if the no of jobs in the system is less than m
 							// then generate m departure events
 							
-							if (noOfJobsInTheSystem == 1 || noOfJobsInTheSystem < K) {
+							if (noOfJobsInTheSystem < 2) {
 								departureOfJobs(systemClock);				       
 						    }
 							

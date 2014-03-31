@@ -1,4 +1,5 @@
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 
@@ -42,6 +43,7 @@ public class MM1kSystem {
 				double lambda = 0.4;
 				mu = 1.0;
 				K = 6;
+				
 				
 				// Get the jobs arrived
 				eventList.insert(GenerateRV.expRV(lambda), 0);
@@ -101,7 +103,28 @@ public class MM1kSystem {
 				
 				// output derived value for E[N]
 				double rho = lambda/mu; 
-				System.out.println("Expected number of jobs (analysis): "+rho/(1-rho));
+				ArrayList<Double> pValues = new ArrayList<Double>();
+							
+				double denom = 0.0;
+				for(int i = 0 ; i < K; i++){
+					denom += Math.pow(rho, i);
+				}
+				System.out.println("Denom"+denom);
+				
+				for(int i = 0 ; i < K; i++){
+					double result = (Math.pow(rho, i))/denom;
+					pValues.add(result);
+				}
+				
+				for(int i = 0 ; i < pValues.size(); i++){
+					System.out.println(pValues.get(i));
+				}
+				EN = 0.0;
+				for(int i = 0; i < pValues.size(); i++){
+					EN += (i * pValues.get(i));
+				}
+				
+				System.out.println("Expected number of jobs (analysis): "+EN);
 	}
 	
 	public void getInput(){		
