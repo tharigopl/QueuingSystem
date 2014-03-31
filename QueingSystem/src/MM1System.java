@@ -40,19 +40,18 @@ public class MM1System {
 		// Calculate lambda from rho * m * mu
 				double lambda = 0.8;
 				mu = 1.0;
-				K = 4;
 				
 				// Get the jobs arrived
 				eventList.insert(GenerateRV.expRV(lambda), 0);
 				
-				int count = 0;
 				// Simulate
-				while(noOfJobsDeparted < 10000){					
+				while(noOfJobsDeparted < 10000){
+					
 					Event currentEvent = eventList.getEvent();
 					double previousClock = systemClock;
 					
 					if(currentEvent == null){
-						System.out.println("");
+						//continue;
 					}
 					systemClock = currentEvent.time;
 					
@@ -62,14 +61,10 @@ public class MM1System {
 							EN += noOfJobsInTheSystem * (systemClock - previousClock);
 							noOfJobsInTheSystem++;
 							
-							if(noOfJobsInTheSystem < K){
-								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
-							}
-							
+							eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
 							if (noOfJobsInTheSystem == 1) {
 								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
 						    }
-							
 							
 							break;
 						//Departure Event
@@ -83,10 +78,6 @@ public class MM1System {
 							// Create a departure event 
 							if(noOfJobsInTheSystem > 0){
 								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
-							}
-							
-							if(eventList.event_count == 0){
-								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
 							}
 							
 							break;					

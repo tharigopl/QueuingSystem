@@ -36,10 +36,6 @@ public class QueuingSystem {
 		QueuingSystem queueingSystem = new QueuingSystem();
 		queueingSystem.getInput();
 		
-		/*for(){
-			
-		}*/
-		
 		queueingSystem.runSimulations();
 	}	
 	
@@ -70,12 +66,13 @@ public class QueuingSystem {
 							// if the no of jobs in the system is less than m
 							// then generate m departure events
 							
-							if (noOfJobsInTheSystem == 1 || noOfJobsInTheSystem < m) {
+							if (noOfJobsInTheSystem == 1 || noOfJobsInTheSystem < K) {
 								departureOfJobs(systemClock);				       
 						    }
 							
 							// Generate next arrival
-							arrivalOfJobs();
+							if(noOfJobsInTheSystem < K)
+								arrivalOfJobs();
 							
 							break;
 						//Departure Event
@@ -90,7 +87,7 @@ public class QueuingSystem {
 							if(noOfJobsInTheSystem > 0){
 								departureOfJobs(systemClock);
 							}
-							if(eventList.event_count == 0)
+							if(noOfJobsInTheSystem == K-1)
 								arrivalOfJobs();
 							break;					
 					}

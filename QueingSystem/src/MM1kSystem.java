@@ -1,3 +1,4 @@
+
 import java.util.Scanner;
 
 
@@ -38,20 +39,21 @@ public class MM1kSystem {
 	
 	public void runSimulations(){
 		// Calculate lambda from rho * m * mu
-				double lambda = 0.8;
+				double lambda = 0.4;
 				mu = 1.0;
+				K = 6;
 				
 				// Get the jobs arrived
 				eventList.insert(GenerateRV.expRV(lambda), 0);
 				
+				int count = 0;
 				// Simulate
-				while(noOfJobsDeparted < 10000){
-					
+				while(noOfJobsDeparted < 10000){					
 					Event currentEvent = eventList.getEvent();
 					double previousClock = systemClock;
 					
 					if(currentEvent == null){
-						//continue;
+						System.out.println("");
 					}
 					systemClock = currentEvent.time;
 					
@@ -61,10 +63,14 @@ public class MM1kSystem {
 							EN += noOfJobsInTheSystem * (systemClock - previousClock);
 							noOfJobsInTheSystem++;
 							
-							eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
+							if(noOfJobsInTheSystem < K){
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
+							}
+							
 							if (noOfJobsInTheSystem == 1) {
 								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
 						    }
+							
 							
 							break;
 						//Departure Event
@@ -78,6 +84,10 @@ public class MM1kSystem {
 							// Create a departure event 
 							if(noOfJobsInTheSystem > 0){
 								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
+							}							
+							
+							if(noOfJobsInTheSystem == K-1){
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
 							}
 							
 							break;					
