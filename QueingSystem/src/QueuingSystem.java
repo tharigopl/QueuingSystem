@@ -46,7 +46,7 @@ public class QueuingSystem {
 				double rho = 1;
 				// Get the jobs arrived
 				arrivalOfJobs();
-				
+				int departureGeneratedForArrival = 0;
 				// Simulate
 				while(noOfJobsDeparted < 10000){
 					
