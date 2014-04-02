@@ -41,7 +41,7 @@ public class QueuingSystem {
 	
 	public void runSimulations(){
 		// Calculate lambda from rho * m * mu
-		lambda2 = 7;
+		lambda2 = 4;
 		mu = 3;
 		double rho = 0.1;
 		m = 2;
@@ -62,6 +62,11 @@ public class QueuingSystem {
 				int noOfDepartureJobsInTheSystem = 0;
 				int noOfUserJobsInTheSystem = 0;
 				int noOfAdminJobsInTheSystem = 0;
+				int noOfUserArrivalsBlocked = 0;
+				int noOfAdminArrivalsBlocked = 0;
+				int totalNoOfUserArrivals = 0;
+				int totalNoOfAdminArrivals = 0;
+				int totalNoOfArrivals = 0;
 				noOfJobsInTheSystem = 0;
 				int count = 0;
 				// Simulate
@@ -76,13 +81,16 @@ public class QueuingSystem {
 					
 					switch(currentEvent.type){
 						// Arrival Event
-						case 0:							
+						case 0:		
+							totalNoOfArrivals++;
 							EN += noOfJobsInTheSystem * (systemClock - previousClock);
 							String typeOfJob = currentEvent.jobType;
 							if(typeOfJob.equalsIgnoreCase("user")){
+								totalNoOfUserArrivals++;
 								noOfUserJobsInTheSystem++;
 								if(noOfJobsInTheSystem >= l){
 									noOfArrivalsBlocked++;
+									noOfUserArrivalsBlocked++;
 									eventList.insert(systemClock+GenerateRV.expRV(lambda2), 0, "user");
 								}/*else if(noOfServersBusy == m && noOfJobsInTheSystem == K - m){
 									noOfArrivalsBlocked++;								
@@ -105,8 +113,10 @@ public class QueuingSystem {
 																					
 								}
 							}else{
+								totalNoOfAdminArrivals++;
 								noOfAdminJobsInTheSystem++;
 								if(noOfJobsInTheSystem >= K){
+									noOfAdminArrivalsBlocked++;
 									noOfArrivalsBlocked++;
 									eventList.insert(systemClock+GenerateRV.expRV(lambda1), 0, "admin");									
 								}/*else if(noOfServersBusy == m && noOfJobsInTheSystem == K - m){
@@ -177,8 +187,13 @@ public class QueuingSystem {
 				}
 					
 				// output simulation results for N, E[N]
-				System.out.println( "Current number of jobs in system: "+noOfJobsInTheSystem);
-				System.out.println( "Expected number of jobs (simulation): "+EN/systemClock);
+				System.out.println( "Current number of jobs in system:  "+noOfJobsInTheSystem);
+				System.out.println( "Expected number of jobs (simulation):  "+EN/systemClock);
+				System.out.println( "Expected time a job spends in the system "+ EN/noOfJobsDeparted);
+				System.out.println(" User arrivals blocking probability:  "+ (double)noOfUserArrivalsBlocked / totalNoOfUserArrivals);
+				System.out.println(" Admin arrivals blocking probability:   "+ (double)noOfAdminArrivalsBlocked / totalNoOfAdminArrivals);
+				System.out.println(" Total blocking probability of the system:   "+ (double)noOfArrivalsBlocked / totalNoOfArrivals);
+				
 				
 				// output derived value for E[N]
 				/*lambda2 = 7;
