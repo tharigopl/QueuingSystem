@@ -34,46 +34,106 @@ public class QueuingSystem {
 	public static void main(String[] args) throws Exception{
 		
 		QueuingSystem queueingSystem = new QueuingSystem();
-		queueingSystem.getInput();
+		//queueingSystem.getInput();
 		
 		queueingSystem.runSimulations();
 	}	
 	
 	public void runSimulations(){
 		// Calculate lambda from rho * m * mu
-				lambda1 = 1 * m * mu;
-				
-				double rho = 1;
+		lambda2 = 7;
+		mu = 3;
+		double rho = 0.1;
+		m = 2;
+		K = 4;
+		l = 1;
+		lambda1 = rho * m * mu;
+		
+		double lambdaAll = lambda1 + lambda2;
+		
 				// Get the jobs arrived
 				arrivalOfJobs();
 				int departureGeneratedForArrival = 0;
+				boolean arrivalIsBlocked = false;
+				int noOfArrivalsBlocked = 0;
+				int noOfServersBusy = 0;
+				int noOfJobsInTheQueue = 0;
+				int noOfArrivalJobsInTheSystem = 0;
+				int noOfDepartureJobsInTheSystem = 0;
+				int noOfUserJobsInTheSystem = 0;
+				int noOfAdminJobsInTheSystem = 0;
+				noOfJobsInTheSystem = 0;
+				int count = 0;
 				// Simulate
-				while(noOfJobsDeparted < 10000){
-					
-					Event currentEvent = eventList.getEvent();
+				while(noOfJobsDeparted < 10000){					
 					double previousClock = systemClock;
-					
+										
+					Event currentEvent = eventList.getEvent();
 					if(currentEvent == null){
-						//continue;
+						System.out.println("");
 					}
 					systemClock = currentEvent.time;
 					
 					switch(currentEvent.type){
 						// Arrival Event
-						case 0: 
+						case 0:							
 							EN += noOfJobsInTheSystem * (systemClock - previousClock);
-							noOfJobsInTheSystem++;
-							// if the no of jobs in the system is less than m
-							// then generate m departure events
+							String typeOfJob = currentEvent.jobType;
+							if(typeOfJob.equalsIgnoreCase("user")){
+								noOfUserJobsInTheSystem++;
+								if(noOfJobsInTheSystem >= l){
+									noOfArrivalsBlocked++;
+									eventList.insert(systemClock+GenerateRV.expRV(lambda2), 0, "user");
+								}/*else if(noOfServersBusy == m && noOfJobsInTheSystem == K - m){
+									noOfArrivalsBlocked++;								
+								}*/
+								else{
+									
+									noOfJobsInTheSystem++;
+									noOfUserJobsInTheSystem++;
+									//if(noOfJobsInTheSystem < K){
+										eventList.insert(systemClock+GenerateRV.expRV(lambda2), 0, "user");									
+									//}
+									if (noOfJobsInTheSystem <= m) {
+										eventList.insert(systemClock+GenerateRV.expRV(mu), 1, "departure");	
+										noOfDepartureJobsInTheSystem++;
+								    }		
+								/*	
+									if(noOfJobsInTheSystem <= K && noOfJobsInTheSystem > m){
+										noOfJobsInTheQueue++;
+									}*/
+																					
+								}
+							}else{
+								noOfAdminJobsInTheSystem++;
+								if(noOfJobsInTheSystem >= K){
+									noOfArrivalsBlocked++;
+									eventList.insert(systemClock+GenerateRV.expRV(lambda1), 0, "admin");									
+								}/*else if(noOfServersBusy == m && noOfJobsInTheSystem == K - m){
+									noOfArrivalsBlocked++;								
+								}*/
+								else{
+									
+									noOfJobsInTheSystem++;
+									noOfAdminJobsInTheSystem++;
+									noOfArrivalJobsInTheSystem++;
+									
+									//if(noOfJobsInTheSystem < K){
+										eventList.insert(systemClock+GenerateRV.expRV(lambda1), 0, "admin");									
+									//}
+									if (noOfJobsInTheSystem <= m) {
+										eventList.insert(systemClock+GenerateRV.expRV(mu), 1, "departure");	
+										noOfDepartureJobsInTheSystem++;
+								    }		
+									
+									/*if(noOfJobsInTheSystem <= K && noOfJobsInTheSystem > m){
+										noOfJobsInTheQueue++;
+									}*/
+																					
+								}
+							}
 							
-							if (noOfJobsInTheSystem < 2) {
-								departureOfJobs(systemClock);				       
-						    }
-							
-							// Generate next arrival
-							if(noOfJobsInTheSystem < K)
-								arrivalOfJobs();
-							
+														
 							break;
 						//Departure Event
 						case 1:
@@ -81,17 +141,39 @@ public class QueuingSystem {
 							// No of jobs departed from the system
 							noOfJobsDeparted++;
 							// Decrement the capacity of the system
+							// if(	!(noOfJobsInTheSystem == 0) )
+							noOfArrivalJobsInTheSystem--;
 							noOfJobsInTheSystem--;
+							//noOfServersBusy--;		
 							
 							// Create a departure event 
-							if(noOfJobsInTheSystem > 0){
-								departureOfJobs(systemClock);
-							}
-							if(noOfJobsInTheSystem == K-1)
-								arrivalOfJobs();
+							//if(noOfJobsInTheSystem > 0 && noOfJobsInTheSystem < m){
+							if(noOfJobsInTheSystem >= m){
+								noOfJobsInTheQueue--;
+								eventList.insert(systemClock+GenerateRV.expRV(mu), 1, "departure");
+								/*Event event = eventList.head;
+								double eventToBeUpdated = 0.0;
+								
+								if(event != null){
+									while(event != null){
+										if(event.type == 0 && !event.departureCreated){
+											event.departureCreated = true;
+											eventList.insert(systemClock+GenerateRV.expRV(mu), 1, true);
+											break;
+										}else{
+											event = event.next;
+										}
+									}
+								}	*/							
+							}							
+							
+							/*if(noOfJobsInTheSystem < K-1){
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0, false);
+							}*/
+							
 							break;					
-					}
-					currentEvent = null;
+						}
+						currentEvent = null;
 				}
 					
 				// output simulation results for N, E[N]
@@ -99,8 +181,37 @@ public class QueuingSystem {
 				System.out.println( "Expected number of jobs (simulation): "+EN/systemClock);
 				
 				// output derived value for E[N]
-				rho = lambda1/mu; 
-				System.out.println("Expected number of jobs (analysis): "+rho/(1-rho));
+				/*lambda2 = 7;
+				mu = 3;
+				rho = 0.1;
+				lambda1 = rho * m * mu;
+				m = 2;
+				K = 4;
+				l = 1;*/
+				lambdaAll = lambda1 + lambda2;
+				
+				double p0 = 0.0;
+				
+				double p1 = 0.0;
+				double p2 = 0.0; 
+				double p3 = 0.0;
+				double p4 = 0.0;
+				
+				p1 = lambdaAll / mu;
+				p2 = (lambda1 * (lambdaAll))/(2 * Math.pow(mu, 2));
+				p3 = (Math.pow(lambda1, 2)*(lambdaAll))/(2 * 2 * Math.pow(mu, 3));
+				p4 = (Math.pow(lambda1, 3)*(lambdaAll))/(2 * 2 * 2 * Math.pow(mu, 4));
+				
+				p0 = 1 / (1 + p1 + p2 + p3 + p4);
+				
+				p1 = p1 * p0;
+				p2 = p2 * p0;
+				p3 = p3 * p0;
+				p4 = p4 * p0;
+				
+				EN = p1 + (2 * p2) + (3 * p3) + (4 * p4);
+				
+				System.out.println("Expected number of jobs (analysis): "+EN);
 	}
 	
 	public void getInput(){		
@@ -126,7 +237,7 @@ public class QueuingSystem {
 	public void arrivalOfJobs(){	
 		// Block administrative jobs if the current capacity of the system is equal to the total capacity
 		if(noOfJobsInTheSystem < K){
-			eventList.insert(GenerateRV.expRV(lambda1), 0);
+			eventList.insert(GenerateRV.expRV(lambda1), 0, "admin");
 			//noOfJobsInTheSystem++;
 		}
 		
@@ -134,13 +245,13 @@ public class QueuingSystem {
 		// and also if the if total no of jobs in the current system is = to the total capacity of the system i.e K
 		// TODO: Check if the second part of the below condition is needed or not		
 		if(noOfJobsInTheSystem < l && noOfJobsInTheSystem < K){
-			eventList.insert(GenerateRV.expRV(lambda2), 0);
+			eventList.insert(GenerateRV.expRV(lambda2), 0, "user");
 			//noOfJobsInTheSystem++;
 		}
 	}
 	
 	public void departureOfJobs(double clock){		
-		eventList.insert(clock + GenerateRV.expRV(mu), 1);	
+		eventList.insert(clock + GenerateRV.expRV(mu), 1, "departure");	
 		//noOfJobsInTheSystem++;
 	}
 }
