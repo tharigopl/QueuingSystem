@@ -41,32 +41,41 @@ public class MMckSystem {
 	public static void main(String[] args) throws Exception{
 		// TODO Auto-generated method stub
 		MMckSystem queueingSystem = new MMckSystem();
-			
+		
 		queueingSystem.runSimulations();
 	}
 	
 	public void runSimulations() throws Exception{
 		// Calculate lambda from rho * m * mu
-				/*double lambda = 20;
+				/*double lambda = 4.0;
 				mu = 5.0;
-				K = 10;
+				K = 4;
 				m = 3;*/
-				double lambda = 5;
-				mu = 5.0;
-				K = 3;
-				m = 2;
+				
+				double lambda = 1.0;
+				mu = 1.0;
+				K = 8;
+				m = 3;
 							
+				int queueLength = K-m;
 				// Get the jobs arrived
-				eventList.insert(GenerateRV.expRV(lambda), 0);
+				 eventList.insert(GenerateRV.expRV(lambda), 0);
 								
 				boolean arrivalIsBlocked = false;
 				int noOfArrivalsBlocked = 0;
 				int noOfServersBusy = 0;
+				int noOfJobsInTheQueue = 0;
+				int noOfArrivalJobsInTheSystem = 0;
+				int noOfDepartureJobsInTheSystem = 0;
+				noOfJobsInTheSystem = 0;
+				int count = 0;
+				
 				// Simulate
-				while(noOfJobsDeparted < 10000){					
-					Event currentEvent = eventList.getEvent();
+				while(noOfJobsDeparted < 10000){
+										
 					double previousClock = systemClock;
-					
+										
+					Event currentEvent = eventList.getEvent();
 					if(currentEvent == null){
 						System.out.println("");
 					}
@@ -74,21 +83,32 @@ public class MMckSystem {
 					
 					switch(currentEvent.type){
 						// Arrival Event
-						case 0: 
+						case 0:							
 							EN += noOfJobsInTheSystem * (systemClock - previousClock);
-							if(noOfJobsInTheSystem == K || arrivalIsBlocked){
+							if(noOfJobsInTheSystem >= K){
 								noOfArrivalsBlocked++;
-							}
-							else{
-								noOfJobsInTheSystem++;
-							
-								if(noOfJobsInTheSystem < K){
-									eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
-								}
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
 								
-								if (noOfJobsInTheSystem < m) {
-									eventList.insert(systemClock+GenerateRV.expRV(mu), 1);									
-							    }
+							}/*else if(noOfServersBusy == m && noOfJobsInTheSystem == K - m){
+								noOfArrivalsBlocked++;								
+							}*/
+							else{
+								
+								noOfJobsInTheSystem++;
+								noOfArrivalJobsInTheSystem++;
+								
+								//if(noOfJobsInTheSystem < K){
+									eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);									
+								//}
+								if (noOfJobsInTheSystem <= m) {
+									eventList.insert(systemClock+GenerateRV.expRV(mu), 1);	
+									noOfDepartureJobsInTheSystem++;
+							    }		
+								
+								if(noOfJobsInTheSystem <= K && noOfJobsInTheSystem > m){
+									noOfJobsInTheQueue++;
+								}
+																				
 							}
 														
 							break;
@@ -98,21 +118,35 @@ public class MMckSystem {
 							// No of jobs departed from the system
 							noOfJobsDeparted++;
 							// Decrement the capacity of the system
-							if(	!(noOfJobsInTheSystem == 0) )
-								noOfJobsInTheSystem--;
-							/*if(noOfJobsInTheSystem < 0){
-								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
-								noOfJobsInTheSystem++;
-							}*/
-														
+							// if(	!(noOfJobsInTheSystem == 0) )
+							noOfArrivalJobsInTheSystem--;
+							noOfJobsInTheSystem--;
+							//noOfServersBusy--;		
+							
 							// Create a departure event 
-							if(noOfJobsInTheSystem > 0 ){
+							//if(noOfJobsInTheSystem > 0 && noOfJobsInTheSystem < m){
+							if(noOfJobsInTheSystem >= m){
+								noOfJobsInTheQueue--;
 								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
+								/*Event event = eventList.head;
+								double eventToBeUpdated = 0.0;
+								
+								if(event != null){
+									while(event != null){
+										if(event.type == 0 && !event.departureCreated){
+											event.departureCreated = true;
+											eventList.insert(systemClock+GenerateRV.expRV(mu), 1, true);
+											break;
+										}else{
+											event = event.next;
+										}
+									}
+								}	*/							
 							}							
 							
-							if(noOfJobsInTheSystem == K-1){
-								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
-							}
+							/*if(noOfJobsInTheSystem < K-1){
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0, false);
+							}*/
 							
 							break;					
 					}
@@ -120,8 +154,9 @@ public class MMckSystem {
 				}
 					
 				// output simulation results for N, E[N]
+				System.out.println("No of Arrivals blocked "+noOfArrivalsBlocked);
 				System.out.println( "Current number of jobs in system: "+noOfJobsInTheSystem);
-				System.out.println( "Expected number of jobs (simulation): "+EN/systemClock);
+				System.out.println( "Expected number of jobs (simulation): "+((EN/systemClock)));
 				
 				// output derived value for E[N]
 				
