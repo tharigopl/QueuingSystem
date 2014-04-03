@@ -1,7 +1,4 @@
-import java.util.Calendar;
 import java.util.Scanner;
-
-import javax.annotation.Generated;
 
 
 public class QueuingSystem {
@@ -29,28 +26,30 @@ public class QueuingSystem {
 	public double EN = 0.0;
 	public Integer noOfJobsDeparted = 0;
 	
-	public double[] rho = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
+	public static double[] rhoArray = {0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0};
 	
 	public static void main(String[] args) throws Exception{
 		
 		QueuingSystem queueingSystem = new QueuingSystem();
-		//queueingSystem.getInput();
-		
-		queueingSystem.runSimulations();
+		queueingSystem.getInput();
+		for(int i = 0 ; i < rhoArray.length; i++){
+			queueingSystem.runSimulations(rhoArray[i]);
+		}
+		//queueingSystem.runSimulations(0.5);
 	}	
 	
-	public void runSimulations(){
+	public void runSimulations(double rhoInput){
 		// Calculate lambda from rho * m * mu
-		lambda2 = 4;
-		mu = 3;
-		double rho = 0.1;
-		m = 2;
-		K = 4;
-		l = 1;
+		
+		double rho = rhoInput;
 		lambda1 = rho * m * mu;
+		EN = 0.0;
+		noOfJobsInTheSystem = 0;
+		//eventList = null;
 		
 		double lambdaAll = lambda1 + lambda2;
 		
+		eventList = new EventList();
 				// Get the jobs arrived
 				arrivalOfJobs();
 				int departureGeneratedForArrival = 0;
@@ -68,9 +67,11 @@ public class QueuingSystem {
 				int totalNoOfAdminArrivals = 0;
 				int totalNoOfArrivals = 0;
 				noOfJobsInTheSystem = 0;
+				noOfJobsDeparted=0;
 				int count = 0;
+				systemClock = 0.0;
 				// Simulate
-				while(noOfJobsDeparted < 10000){					
+				while(noOfJobsDeparted < 1000000){					
 					double previousClock = systemClock;
 										
 					Event currentEvent = eventList.getEvent();
@@ -81,13 +82,12 @@ public class QueuingSystem {
 					
 					switch(currentEvent.type){
 						// Arrival Event
-						case 0:		
+						case 0:	
 							totalNoOfArrivals++;
 							EN += noOfJobsInTheSystem * (systemClock - previousClock);
 							String typeOfJob = currentEvent.jobType;
 							if(typeOfJob.equalsIgnoreCase("user")){
-								totalNoOfUserArrivals++;
-								noOfUserJobsInTheSystem++;
+								totalNoOfUserArrivals++;								
 								if(noOfJobsInTheSystem >= l){
 									noOfArrivalsBlocked++;
 									noOfUserArrivalsBlocked++;
@@ -97,8 +97,9 @@ public class QueuingSystem {
 								}*/
 								else{
 									
-									noOfJobsInTheSystem++;
-									noOfUserJobsInTheSystem++;
+									noOfJobsInTheSystem++;									
+									noOfUserJobsInTheSystem++;									
+									
 									//if(noOfJobsInTheSystem < K){
 										eventList.insert(systemClock+GenerateRV.expRV(lambda2), 0, "user");									
 									//}
@@ -114,7 +115,6 @@ public class QueuingSystem {
 								}
 							}else{
 								totalNoOfAdminArrivals++;
-								noOfAdminJobsInTheSystem++;
 								if(noOfJobsInTheSystem >= K){
 									noOfAdminArrivalsBlocked++;
 									noOfArrivalsBlocked++;
@@ -123,10 +123,9 @@ public class QueuingSystem {
 									noOfArrivalsBlocked++;								
 								}*/
 								else{
-									
+									//totalNoOfArrivals++;
 									noOfJobsInTheSystem++;
 									noOfAdminJobsInTheSystem++;
-									noOfArrivalJobsInTheSystem++;
 									
 									//if(noOfJobsInTheSystem < K){
 										eventList.insert(systemClock+GenerateRV.expRV(lambda1), 0, "admin");									
@@ -134,15 +133,9 @@ public class QueuingSystem {
 									if (noOfJobsInTheSystem <= m) {
 										eventList.insert(systemClock+GenerateRV.expRV(mu), 1, "departure");	
 										noOfDepartureJobsInTheSystem++;
-								    }		
-									
-									/*if(noOfJobsInTheSystem <= K && noOfJobsInTheSystem > m){
-										noOfJobsInTheQueue++;
-									}*/
-																					
+								    }												
 								}
-							}
-							
+							}							
 														
 							break;
 						//Departure Event
@@ -160,26 +153,8 @@ public class QueuingSystem {
 							//if(noOfJobsInTheSystem > 0 && noOfJobsInTheSystem < m){
 							if(noOfJobsInTheSystem >= m){
 								noOfJobsInTheQueue--;
-								eventList.insert(systemClock+GenerateRV.expRV(mu), 1, "departure");
-								/*Event event = eventList.head;
-								double eventToBeUpdated = 0.0;
-								
-								if(event != null){
-									while(event != null){
-										if(event.type == 0 && !event.departureCreated){
-											event.departureCreated = true;
-											eventList.insert(systemClock+GenerateRV.expRV(mu), 1, true);
-											break;
-										}else{
-											event = event.next;
-										}
-									}
-								}	*/							
-							}							
-							
-							/*if(noOfJobsInTheSystem < K-1){
-								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0, false);
-							}*/
+								eventList.insert(systemClock+GenerateRV.expRV(mu), 1, "departure");								
+							}	
 							
 							break;					
 						}
@@ -187,46 +162,96 @@ public class QueuingSystem {
 				}
 					
 				// output simulation results for N, E[N]
+				System.out.println(" RHO Value : "+rho);
 				System.out.println( "Current number of jobs in system:  "+noOfJobsInTheSystem);
 				System.out.println( "Expected number of jobs (simulation):  "+EN/systemClock);
 				System.out.println( "Expected time a job spends in the system "+ EN/noOfJobsDeparted);
-				System.out.println(" User arrivals blocking probability:  "+ (double)noOfUserArrivalsBlocked / totalNoOfUserArrivals);
-				System.out.println(" Admin arrivals blocking probability:   "+ (double)noOfAdminArrivalsBlocked / totalNoOfAdminArrivals);
-				System.out.println(" Total blocking probability of the system:   "+ (double)noOfArrivalsBlocked / totalNoOfArrivals);
+				System.out.println("User arrivals blocking probability:  "+ (double)noOfUserArrivalsBlocked / totalNoOfUserArrivals);
+				System.out.println("Admin arrivals blocking probability:   "+ (double)noOfAdminArrivalsBlocked / totalNoOfAdminArrivals);
+				System.out.println("Total blocking probability of the system:   "+ (double)noOfArrivalsBlocked / totalNoOfArrivals);
+				
 				
 				
 				// output derived value for E[N]
-				/*lambda2 = 7;
-				mu = 3;
-				rho = 0.1;
-				lambda1 = rho * m * mu;
-				m = 2;
-				K = 4;
-				l = 1;*/
+				
 				lambdaAll = lambda1 + lambda2;
 				
-				double p0 = 0.0;
 				
+				double p0 = 0.0;				
 				double p1 = 0.0;
 				double p2 = 0.0; 
 				double p3 = 0.0;
 				double p4 = 0.0;
+				EN = 0.0;
+				double lambdaEff = 0.0;
+				double ET = 0.0;
+				double userJobsBlockedTheoretical = 0.0;
+				double adminJobsBlockedTheoretical = 0.0;
 				
-				p1 = lambdaAll / mu;
-				p2 = (lambda1 * (lambdaAll))/(2 * Math.pow(mu, 2));
-				p3 = (Math.pow(lambda1, 2)*(lambdaAll))/(2 * 2 * Math.pow(mu, 3));
-				p4 = (Math.pow(lambda1, 3)*(lambdaAll))/(2 * 2 * 2 * Math.pow(mu, 4));
 				
-				p0 = 1 / (1 + p1 + p2 + p3 + p4);
+				if(l == 1){
+					p1 = lambdaAll / mu;
+					p2 = (lambda1 * (lambdaAll))/(2 * Math.pow(mu, 2));
+					p3 = (Math.pow(lambda1, 2)*(lambdaAll))/(2 * 2 * Math.pow(mu, 3));
+					p4 = (Math.pow(lambda1, 3)*(lambdaAll))/(2 * 2 * 2 * Math.pow(mu, 4));
+					
+					p0 = 1 / (1 + p1 + p2 + p3 + p4);
+					
+					p1 = p1 * p0;
+					p2 = p2 * p0;
+					p3 = p3 * p0;
+					p4 = p4 * p0;
+					
+					EN = p1 + (2 * p2) + (3 * p3) + (4 * p4);
+					
+					// lambdaEff = lambda(n) * p(n)
+					
+					lambdaEff = (lambdaAll * p0) + (lambda1 * p1) + (lambda1 * p2) + (lambda1 * p3); 
+													
+					ET = EN / lambdaEff;		
+					
+					// Calculate no of user arrivals blocked
+					//userJobsBlockedTheoretical =  (lambda1 * p4) / lambdaEff;
+					userJobsBlockedTheoretical = 1 - p0;
+							
+					// Calculate no of admin arrivals blocked
+					adminJobsBlockedTheoretical = p4;
+							
+				}else if(l == 3){
+					p1 = lambdaAll / mu;
+					p2 = (Math.pow(lambdaAll,2))/(2 * Math.pow(mu, 2));
+					p3 = (Math.pow(lambdaAll,3))/(2 * 2 * Math.pow(mu, 3));
+					p4 = (Math.pow(lambdaAll, 3)*(lambda1))/(2 * 2 * 2 * Math.pow(mu, 4));
+					
+					p0 = 1 / (1 + p1 + p2 + p3 + p4);
+					
+					p1 = p1 * p0;
+					p2 = p2 * p0;
+					p3 = p3 * p0;
+					p4 = p4 * p0;
+					
+					EN = p1 + (2 * p2) + (3 * p3) + (4 * p4);
+					
+					lambdaEff = (lambdaAll * p0) + (lambdaAll * p1) + (lambdaAll * p2) + (lambda1 * p3); 
+					
+					ET = EN / lambdaEff;
+					
+					// Calculate no of user arrivals blocked
+					
+					userJobsBlockedTheoretical =  1 - (p0 + p1 + p2);
+					
+					
+					// Calculate no of admin arrivals blocked
+					adminJobsBlockedTheoretical = p4;
+				}
 				
-				p1 = p1 * p0;
-				p2 = p2 * p0;
-				p3 = p3 * p0;
-				p4 = p4 * p0;
+				System.out.println(" ----------------------------------------------------------------------------------------------------");
 				
-				EN = p1 + (2 * p2) + (3 * p3) + (4 * p4);
-				
-				System.out.println("Expected number of jobs (analysis): "+EN);
+				System.out.println("Expected number of jobs (theoretical): "+EN);
+				System.out.println("Expected time for jobs in the system (theoretical): "+ET);
+				System.out.println("Blocking probability of user jobs (theoretical): "+userJobsBlockedTheoretical);
+				System.out.println("Blocking probability of admin jobs (theoretical): "+adminJobsBlockedTheoretical);
+				System.out.println(" ____________________________________________________________________________________________________");
 	}
 	
 	public void getInput(){		

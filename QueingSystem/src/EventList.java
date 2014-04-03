@@ -10,9 +10,9 @@ public class EventList {
 		head = null;
 	}
 	
-	public void insert(double time, int type){
+	public void insert(double time, int type, String jobType){
 		event_count++;
-		Event event = new Event(time, type);
+		Event event = new Event(time, type, jobType);
 		if(head == null){
 			head = event;
 			event.next = null;

@@ -5,11 +5,13 @@ public class Event implements Comparable<Event>, Comparator<Event>{
 	public double time;
 	public int type;
 	public Event next;
+	public String jobType;
 	
-	Event(double time, int type){
+	Event(double time, int type, String jobType){
 		this.time = time;
 		this.type = type;
 		this.next = null;
+		this.jobType = jobType;
 	}
 
 	@Override
