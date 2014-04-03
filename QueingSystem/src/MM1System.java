@@ -42,7 +42,7 @@ public class MM1System {
 				mu = 1.0;
 				
 				// Get the jobs arrived
-				eventList.insert(GenerateRV.expRV(lambda), 0);
+				eventList.insert(GenerateRV.expRV(lambda), 0,"");
 				
 				// Simulate
 				while(noOfJobsDeparted < 10000){
@@ -61,9 +61,9 @@ public class MM1System {
 							EN += noOfJobsInTheSystem * (systemClock - previousClock);
 							noOfJobsInTheSystem++;
 							
-							eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
+							eventList.insert(systemClock+GenerateRV.expRV(lambda), 0,"");
 							if (noOfJobsInTheSystem == 1) {
-								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
+								eventList.insert(systemClock+GenerateRV.expRV(mu), 1,"");
 						    }
 							
 							break;
@@ -77,7 +77,7 @@ public class MM1System {
 							
 							// Create a departure event 
 							if(noOfJobsInTheSystem > 0){
-								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
+								eventList.insert(systemClock+GenerateRV.expRV(mu), 1,"");
 							}
 							
 							break;					

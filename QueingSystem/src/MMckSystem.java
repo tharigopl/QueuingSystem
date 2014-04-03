@@ -59,7 +59,7 @@ public class MMckSystem {
 							
 				int queueLength = K-m;
 				// Get the jobs arrived
-				 eventList.insert(GenerateRV.expRV(lambda), 0);
+				 eventList.insert(GenerateRV.expRV(lambda), 0, "");
 								
 				boolean arrivalIsBlocked = false;
 				int noOfArrivalsBlocked = 0;
@@ -87,7 +87,7 @@ public class MMckSystem {
 							EN += noOfJobsInTheSystem * (systemClock - previousClock);
 							if(noOfJobsInTheSystem >= K){
 								noOfArrivalsBlocked++;
-								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0,"");
 								
 							}/*else if(noOfServersBusy == m && noOfJobsInTheSystem == K - m){
 								noOfArrivalsBlocked++;								
@@ -98,10 +98,10 @@ public class MMckSystem {
 								noOfArrivalJobsInTheSystem++;
 								
 								//if(noOfJobsInTheSystem < K){
-									eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);									
+									eventList.insert(systemClock+GenerateRV.expRV(lambda), 0,"");									
 								//}
 								if (noOfJobsInTheSystem <= m) {
-									eventList.insert(systemClock+GenerateRV.expRV(mu), 1);	
+									eventList.insert(systemClock+GenerateRV.expRV(mu), 1,"");	
 									noOfDepartureJobsInTheSystem++;
 							    }		
 								
@@ -127,7 +127,7 @@ public class MMckSystem {
 							//if(noOfJobsInTheSystem > 0 && noOfJobsInTheSystem < m){
 							if(noOfJobsInTheSystem >= m){
 								noOfJobsInTheQueue--;
-								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
+								eventList.insert(systemClock+GenerateRV.expRV(mu), 1,"");
 								/*Event event = eventList.head;
 								double eventToBeUpdated = 0.0;
 								

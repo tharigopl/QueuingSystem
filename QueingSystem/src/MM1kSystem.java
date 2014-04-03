@@ -46,7 +46,7 @@ public class MM1kSystem {
 				
 				
 				// Get the jobs arrived
-				eventList.insert(GenerateRV.expRV(lambda), 0);
+				eventList.insert(GenerateRV.expRV(lambda), 0, "");
 				
 				int count = 0;
 				// Simulate
@@ -66,11 +66,11 @@ public class MM1kSystem {
 							noOfJobsInTheSystem++;
 							
 							if(noOfJobsInTheSystem < K){
-								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0, "");
 							}
 							
 							if (noOfJobsInTheSystem == 1) {
-								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
+								eventList.insert(systemClock+GenerateRV.expRV(mu), 1, "");
 						    }
 							
 							
@@ -86,11 +86,11 @@ public class MM1kSystem {
 							
 							// Create a departure event 
 							if(noOfJobsInTheSystem > 0){
-								eventList.insert(systemClock+GenerateRV.expRV(mu), 1);
+								eventList.insert(systemClock+GenerateRV.expRV(mu), 1, "");
 							}							
 							
 							if(noOfJobsInTheSystem == K-1){
-								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0);
+								eventList.insert(systemClock+GenerateRV.expRV(lambda), 0, "");
 							}
 							
 							break;					
